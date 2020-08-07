@@ -68,17 +68,17 @@ public:
         RGB_32F,
         DEPTH
     };
-    
+
     RenderingEngine(void);
-    
+
     ~RenderingEngine(void);
-    
+
     static RenderingEngine *Instance(void)
     {
         if (instance == NULL) instance = new RenderingEngine();
         return instance;
     }
-    
+
     /**
      *  Initializes the rendering engine instance given a 3x3 float
      *  intrinsic camera matrix
@@ -95,15 +95,15 @@ public:
      *  @param  zFar The distance of the OpenGL far plane.
      *  @param  numLevels Number of supported pyramid levels with a downscale factor of 2.
      */
-    void init(const cv::Matx33f &K, int width, int height, float zNear, float zFar, int numLevels);
-    
+    void init(const std::string& shader_folder, const cv::Matx33f &K, int width, int height, float zNear, float zFar, int numLevels);
+
     /**
      *  Returns the number of supported pyramid levels for rendering.
      *
      *  @return  The number of supported pyramid levels for rendering.
      */
     int getNumLevels();
-    
+
     /**
      *  Sets a pyramid level to be used for rendering between 0 (full resolution)
      *  and getNumLevels() (the smallest resolution).
@@ -111,66 +111,66 @@ public:
      *  @param level The pyramid level to be used for rendering.
      */
     void setLevel(int level);
-    
+
     /**
      *  Returns the current pyramid level used for rendering.
      *
      *  @return  The current pyramid level used for rendering.
      */
     int getLevel();
-    
+
     /**
      *  Activates the OpenGL context of the rendering engine.
      */
     void makeCurrent();
-    
+
     /**
      *  Deactivates the OpenGL context of the rendering engine.
      */
     void doneCurrent();
-    
+
     /**
      *  Returns the OpenGL context of the rendering engine.
      *
      *  @return  The OpenGL context of the rendering engine.
      */
     QOpenGLContext *getContext();
-    
+
     /**
      *  Returns the OpenGL ID of the frame buffer object used for offscreen rendering.
      *
      *  @return  The OpenGL ID of the frame buffer object used for offscreen rendering.
      */
     GLuint getFrameBufferID();
-    
+
     /**
      *  Returns the OpenGL texture ID of the rendered color image.
      *
      *  @return  The OpenGL texture ID of the rendered color image.
      */
     GLuint getColorTextureID();
-    
+
     /**
      *  Returns the OpenGL texture ID of the rendered depth buffer.
      *
      *  @return  The OpenGL texture ID of the rendered depth buffer.
      */
     GLuint getDepthTextureID();
-    
+
     /**
      *  Returns the Z-distance of the near plane.
      *
      *  @return  The the Z-distance of the near plane.
      */
     float getZNear();
-    
+
     /**
      *  Returns the Z-distance of the far plane.
      *
      *  @return  The the Z-distance of the far plane.
      */
     float getZFar();
-    
+
     /**
      *  Returns a 4x4 float version of the intrinsic camera matrix wrt the current
      *  pyramid level
@@ -184,7 +184,7 @@ public:
      *  pyramid level.
      */
     cv::Matx44f getCalibrationMatrix();
-    
+
     /**
      *  Renders a single model with a constant color and no shading in order to
      *  obtain a binary silhouette mask of it wrt its current pose.
@@ -198,7 +198,7 @@ public:
      *  @param drawAll Whether to draw the model even if it has not yet been initlaized for tracking (default = false).
      */
     void renderSilhouette(Model *model, GLenum polyonMode, bool invertDepth = false, float r = 1.0f, float g = 1.0f, float b = 1.0f, bool drawAll = false);
-    
+
     /**
      *  Renders a single model wrt its current pose using Phong shading.
      *
@@ -210,7 +210,7 @@ public:
      *  @param drawAll Whether to draw the model even if it has not yet been initlaized for tracking (default = false).
      */
     void renderShaded(Model *model, GLenum polyonMode, float r = 1.0f, float g = 0.5f, float b = 0.0f, bool drawAll = false);
-    
+
     /**
      *  Renders the per pixel surface normals of single model wrt its current pose where the
      *  normal direction is mapped from (x, y, z) in [-1, 1] to (r, g, b) in [0, 1].
@@ -220,7 +220,7 @@ public:
      *  @param drawAll Whether to draw the model even if it has not yet been initlaized for tracking (default = false).
      */
     void renderNormals(Model *model, GLenum polyonMode, bool drawAll = false);
-    
+
     /**
      *  Renders a multiple models in a common scene with a constant color and no shading
      *  in order to obtain a their binary silhouette masks with correct occlusions
@@ -234,7 +234,7 @@ public:
      *  @param drawAll Whether to draw all models even if they been not yet initlaized for tracking (default = false).
      */
     void renderSilhouette(std::vector<Model*> models, GLenum polyonMode, bool invertDepth = false, const std::vector<cv::Point3f> &colors = std::vector<cv::Point3f>(), bool drawAll = false);
-    
+
     /**
      *  Renders a multiple models in a common scene wrt their current poses using Phong shading.
      *
@@ -244,7 +244,7 @@ public:
      *  @param drawAll Whether to draw the model even if it has not yet been initlaized for tracking (default = false).
      */
     void renderShaded(std::vector<Model*> models, GLenum polyonMode, const std::vector<cv::Point3f> &colors = std::vector<cv::Point3f>(), bool drawAll = false);
-    
+
     /**
      *  Renders the per pixel surface normals of multiple models in a common scene wrt their
      *  current poses where the normal direction is mapped from (x, y, z) in [-1, 1] to (r, g, b)
@@ -255,7 +255,7 @@ public:
      *  @param drawAll Whether to draw the model even if it has not yet been initlaized for tracking (default = false).
      */
     void renderNormals(std::vector<Model*> models, GLenum polyonMode, bool drawAll = false);
-    
+
     /**
      *  Projects the eight corners of a model's bouding box into the image and computes the
      *  enclosing 2D bounding rect of these projections wrt the model's poae.
@@ -265,7 +265,7 @@ public:
      *  @param boundingRect The resulting 2D bounding rect of the 2D projections.
      */
     void projectBoundingBox(Model *model, std::vector<cv::Point2f> &projections, cv::Rect &boundingRect);
-    
+
     /**
      *  Downloads the most recently rendered image from the GPU to the host memory and converts
      *  it to an OpenCV image depending on a given frametype. Use MASK to obtain a silhouette
@@ -278,53 +278,53 @@ public:
      *  @return  The most recently rendered image according to the desired frame type.
      */
     cv::Mat downloadFrame(RenderingEngine::FrameType type);
-    
+
     /**
      *  Destroys and deletes the current rendering engine singleton instance.
      */
     void destroy();
 
-    
+
 private:
     static RenderingEngine *instance;
-    
+
     int width;
     int height;
-    
+
     int fullWidth;
     int fullHeight;
-    
+
     float zNear;
     float zFar;
-    
+
     int numLevels;
-    
+
     int currentLevel;
-    
+
     std::vector<cv::Matx44f> calibrationMatrices;
     cv::Matx44f projectionMatrix;
     cv::Matx44f lookAtMatrix;
-    
+
     QOffscreenSurface *surface;
     QOpenGLContext *glContext;
-    
+
     GLuint frameBufferID;
     GLuint colorTextureID;
     GLuint depthTextureID;
-    
+
     int angle;
-    
+
     cv::Vec3f lightPosition;
-    
+
     QString shaderFolder;
     QOpenGLShaderProgram *silhouetteShaderProgram;
     QOpenGLShaderProgram *phongblinnShaderProgram;
     QOpenGLShaderProgram *normalsShaderProgram;
-    
+
     bool initRenderingBuffers();
-    
+
     bool initShaderProgram(QOpenGLShaderProgram *program, QString shaderName);
-    
+
 };
 
 
